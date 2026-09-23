@@ -334,6 +334,40 @@
     .input-box{ max-width:none; }
     .radio-group{ justify-content:flex-start; }
   }
+  .guide-text{
+    font-size:13.5px;
+    line-height:1.7;
+    color:var(--label);
+  }
+  .guide-text h3{
+    font-size:14px;
+    margin:20px 0 8px;
+    color:var(--text);
+  }
+  .guide-text p{
+    margin:0 0 12px;
+  }
+  .guide-text ol{
+    margin:0 0 12px;
+    padding-left:20px;
+  }
+  .guide-text li{
+    margin-bottom:6px;
+  }
+  .site-footer{
+    max-width:720px;
+    margin:24px auto 0;
+    text-align:center;
+    font-size:12px;
+    color:var(--sub);
+  }
+  .site-footer a{
+    color:var(--sub);
+    text-decoration:underline;
+  }
+  .site-footer span{
+    margin:0 8px;
+  }
 </style>
 </head>
 <body>
@@ -576,7 +610,48 @@
       <b>실제 배대지 배송비</b>는 판매가·총마진 계산에는 영향을 주지 않고, <b>실제 순마진</b>에서만 차감됩니다(사후 실비 정산용).
     </div>
   </div>
+
+  <!-- 사용법 / 설명 -->
+  <div class="card">
+    <h2>이 계산기는 이렇게 씁니다</h2>
+    <p class="desc">해외구매대행·구매대행 셀러를 위한 판매가 산정 도구입니다.</p>
+    <div class="guide-text">
+      <p>
+        해외(주로 중국) 사입처에서 위안화로 상품을 사입해서 국내 오픈마켓(스마트스토어, 쿠팡, 11번가, ESM Plus 등)에
+        판매할 때는 단순히 원가에 마진만 얹어서는 안 됩니다. 환율, 카드 결제 수수료, 배대지(해외배송대행) 비용,
+        관/부가세, 오픈마켓 판매 수수료까지 겹겹이 빠져나가기 때문에, 이 모든 비용을 반영한 뒤에도 원하는 마진이
+        남도록 판매가를 역산해야 합니다. 이 계산기는 그 계산 과정을 자동화한 도구입니다.
+      </p>
+      <h3>기본 사용 순서</h3>
+      <ol>
+        <li><b>상품 구매비용(¥)</b>과 <b>적용 환율</b>을 입력하면 원화 환산 원가가 자동 계산됩니다.</li>
+        <li><b>카드 수수료율</b>, <b>배대지 비용</b>, <b>관부가세</b> 여부를 입력해 실제 총구매비용을 확정합니다.</li>
+        <li><b>기본 마진율(%)</b>과 <b>추가 마진(원)</b>을 정하면 총마진과 판매가가 자동으로 산출됩니다.</li>
+        <li>마켓별 수수료율(스마트스토어 5%, 쿠팡 15% 등)을 반영한 <b>오픈마켓별 최종 노출가</b>까지 한 번에 확인할 수 있습니다.</li>
+        <li>반대로 <b>원하는 판매가나 마켓 노출가를 직접 입력</b>해도 그에 맞춰 나머지 값이 자동으로 재계산됩니다(양방향 계산).</li>
+      </ol>
+      <h3>배대지 배송비 자동 조회</h3>
+      <p>
+        무게(kg)만 입력하면 동백국제물류·하이원 등 배대지별 구간 단가표에서 실제 배송비를 자동으로 찾아와
+        "실제 순마진"에 반영합니다. 견적을 낼 때마다 배대지 단가표를 직접 찾아볼 필요가 없습니다.
+      </p>
+      <h3>자주 묻는 질문</h3>
+      <p><b>Q. 판매가를 직접 입력하면 마진이 이상해지지 않나요?</b><br>
+      A. 판매가·마켓 최종가를 직접 고치면 추가 마진은 그대로 두고 판매가와 마켓 가격만 갱신되므로, 원가 기반의
+      기본 마진 구조가 깨지지 않습니다.</p>
+      <p><b>Q. 여러 상품을 한 번에 계산할 수 있나요?</b><br>
+      A. 현재는 상품 1개씩 계산하는 구조입니다. 상품마다 페이지를 새로고침하거나 값만 바꿔서 재사용하시면 됩니다.</p>
+      <p><b>Q. 계산 결과가 저장되나요?</b><br>
+      A. 이 계산기는 브라우저에서만 동작하며 서버로 값을 전송하거나 저장하지 않습니다.</p>
+    </div>
+  </div>
 </div>
+
+<footer class="site-footer">
+  <a href="/privacy.html">개인정보처리방침</a>
+  <span>·</span>
+  <a href="/">계산기 모음으로</a>
+</footer>
 
 <script>
 (function(){
