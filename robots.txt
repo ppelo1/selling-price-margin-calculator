@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://ppelo1.github.io/selling-price-margin-calculator/sitemap.xml
+Sitemap: https://tools.cafeodi.store/sitemap.xml
