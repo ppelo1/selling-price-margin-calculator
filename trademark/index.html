@@ -27,6 +27,7 @@
   .msg{font-size:13px;color:var(--sub);margin:14px 0 0;}
   .msg.err{color:var(--warn);}
   .summary{font-size:14px;font-weight:700;margin:0 0 6px;}
+  .summary .cnt{color:#e5281f;font-weight:800;}
   .item{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--divider);}
   .item:last-child{border-bottom:none;}
   .thumb{flex:0 0 72px;height:72px;border:1px solid var(--border);border-radius:8px;background:var(--input-bg) center/contain no-repeat;}
@@ -197,7 +198,7 @@
       if(!r.ok) throw new Error(d.error||"조회 실패");
       if(!append){ $("list").innerHTML=""; shown=[]; }
       $("res").hidden = false;
-      $("sum").textContent = `"${d.name}" ${exact ? "정확히 일치하는 상표" : "검색 결과"} 총 ${d.totalCount.toLocaleString()}건`;
+      $("sum").innerHTML = `${esc(d.name)}에 대해${exact ? " 정확히 일치하는 상표가" : ""} 총 <span class="cnt">${d.totalCount.toLocaleString()}</span>건이 검색되었습니다.`;
       render(d.items, true);
       $("more").hidden = $("list").children.length >= d.totalCount || d.items.length===0;
       $("msg").textContent = d.items.length ? "" : "조회된 상표가 없습니다.";
