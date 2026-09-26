@@ -123,9 +123,10 @@ export default {
 
     let res;
     try {
-      res = await fetch(up.toString());
+      res = await fetch(up.toString(), { signal: AbortSignal.timeout(12000) });
     } catch (e) {
-      return json({ error: "KIPRIS 연결 실패" }, 502);
+      const timedOut = e && (e.name === "TimeoutError" || e.name === "AbortError");
+      return json({ error: timedOut ? "KIPRIS 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요." : "KIPRIS 연결 실패" }, timedOut ? 504 : 502);
     }
     if (!res.ok) return json({ error: `KIPRIS 응답 오류 (${res.status})` }, 502);
 

@@ -193,7 +193,7 @@
     if(!API_BASE){ $("msg").className="msg err"; $("msg").textContent="API 주소(API_BASE)가 아직 설정되지 않았습니다."; return; }
     $("btn").disabled = true; $("msg").className="msg"; $("msg").textContent="조회 중...";
     try{
-      const r = await fetch(`${API_BASE}/?name=${encodeURIComponent(name)}&page=${page}${exact?"&exact=1":""}`);
+      const r = await fetch(`${API_BASE}/?name=${encodeURIComponent(name)}&page=${page}${exact?"&exact=1":""}`, { signal: AbortSignal.timeout(20000) });
       const d = await r.json();
       if(!r.ok) throw new Error(d.error||"조회 실패");
       if(!append){ $("list").innerHTML=""; shown=[]; }
@@ -203,7 +203,8 @@
       $("more").hidden = $("list").children.length >= d.totalCount || d.items.length===0;
       $("msg").textContent = d.items.length ? "" : "조회된 상표가 없습니다.";
     }catch(e){
-      $("msg").className="msg err"; $("msg").textContent = e.message||"오류가 발생했습니다.";
+      const slow = e && (e.name==="TimeoutError" || e.name==="AbortError");
+      $("msg").className="msg err"; $("msg").textContent = slow ? "응답이 지연되고 있습니다. 잠시 후 다시 조회해 주세요." : (e.message||"오류가 발생했습니다.");
     }finally{ $("btn").disabled=false; loadUsage(); }
   }
   $("f").addEventListener("submit",e=>{e.preventDefault();name=$("q").value.trim();if(!name)return;page=1;exact=$("exact").checked;try{localStorage.setItem("tmExact",exact?"1":"0");}catch(err){}search(false);});
