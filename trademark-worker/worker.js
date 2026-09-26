@@ -97,10 +97,11 @@ export default {
 
     const name =(url.searchParams.get("name") || "").trim();
     const page = Math.min(Math.max(parseInt(url.searchParams.get("page")) || 1, 1), 50);
+    const exact = url.searchParams.get("exact") === "1"; // 상표명 완전일치 검색
     if (!name || name.length > 50) return json({ error: "상표명을 1~50자로 입력하세요." }, 400);
 
     const cache = caches.default;
-    const cacheKey = new Request(`https://cache.local/tm3?name=${encodeURIComponent(name)}&page=${page}`);
+    const cacheKey = new Request(`https://cache.local/tm4?name=${encodeURIComponent(name)}&page=${page}&exact=${exact ? 1 : 0}`);
     const hit = await cache.match(cacheKey);
     if (hit) return new Response(hit.body, { headers: hit.headers });
 
@@ -111,8 +112,8 @@ export default {
     // 성공·실패와 관계없이 KIPRIS를 부르는 순간 1건으로 센다 (보수적으로)
     if (env.USAGE) await env.USAGE.put(usageKey, String(used + 1), { expirationTtl: 60 * 60 * 24 * 40 });
 
-    const up = new URL(env.KIPRIS_URL || DEFAULT_URL);
-    up.searchParams.set("trademarkName", name);
+    const up = new URL((env.KIPRIS_URL || DEFAULT_URL).replace("trademarkNameSearchInfo", exact ? "trademarkNameMatchSearchInfo" : "trademarkNameSearchInfo"));
+    up.searchParams.set(exact ? "trademarkNameMatch" : "trademarkName", name);
     // 살아 있는 상표만: 출원·공고·등록. 거절·소멸·취하·포기·무효는 제외
     for (const s of ["application", "publication", "registration"]) up.searchParams.set(s, "true");
     for (const s of ["refused", "expiration", "withdrawal", "abandonment", "cancel"]) up.searchParams.set(s, "false");
