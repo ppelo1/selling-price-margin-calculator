@@ -14,7 +14,17 @@ const FIELD_MAP = {
   registrationDate: ["RegistrationDate", "registrationDate", "registerDate"],
   status: ["ApplicationStatus", "applicationStatus", "registerStatus", "status"],
   classification: ["GoodClassificationCode", "classificationCode", "classification", "goodClassificationCode"],
-  image: ["ThumbnailPath", "ImagePath", "drawing", "bigDrawing"],
+  image: ["ThumbnailPath", "drawing", "ImagePath", "bigDrawing"],
+  bigImage: ["ImagePath", "bigDrawing", "ThumbnailPath", "drawing"],
+  agent: ["AgentName", "agentName"],
+  registrant: ["RegistrationRightholderName", "regPrivilegeName"],
+  publicNumber: ["PublicNumber", "publicationNumber"],
+  publicDate: ["PublicDate", "publicationDate"],
+  regPublicNumber: ["RegistrationPublicNumber", "registrationPublicNumber"],
+  regPublicDate: ["RegistrationPublicDate", "registrationPublicDate"],
+  priorityNumber: ["PriorityClaimNumber", "priorityNumber"],
+  priorityDate: ["PriorityClaimDate", "priorityDate"],
+  vienna: ["ViennaCode", "viennaCode"],
 };
 
 function decode(s) {
@@ -90,7 +100,7 @@ export default {
     if (!name || name.length > 50) return json({ error: "상표명을 1~50자로 입력하세요." }, 400);
 
     const cache = caches.default;
-    const cacheKey = new Request(`https://cache.local/tm2?name=${encodeURIComponent(name)}&page=${page}`);
+    const cacheKey = new Request(`https://cache.local/tm3?name=${encodeURIComponent(name)}&page=${page}`);
     const hit = await cache.match(cacheKey);
     if (hit) return new Response(hit.body, { headers: hit.headers });
 
