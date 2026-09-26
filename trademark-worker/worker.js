@@ -73,7 +73,19 @@ export default {
     if (!env.KIPRIS_KEY) return json({ error: "server not configured" }, 500);
 
     const url = new URL(request.url);
-    const name = (url.searchParams.get("name") || "").trim();
+
+    // KIPRIS 무료 한도(월 1,000건)를 넘지 않도록 실제 호출 횟수를 월별로 센다 (KST 기준)
+    const limit = Number(env.MONTHLY_LIMIT) || 950;
+    const month = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 7);
+    const usageKey = `count:${month}`;
+    const readUsed = async () => (env.USAGE ? Number(await env.USAGE.get(usageKey)) || 0 : 0);
+
+    if (url.pathname === "/usage") {
+      const used = await readUsed();
+      return json({ month, used, limit, remaining: Math.max(limit - used, 0), blocked: used >= limit });
+    }
+
+    const name =(url.searchParams.get("name") || "").trim();
     const page = Math.min(Math.max(parseInt(url.searchParams.get("page")) || 1, 1), 50);
     if (!name || name.length > 50) return json({ error: "상표명을 1~50자로 입력하세요." }, 400);
 
@@ -81,6 +93,13 @@ export default {
     const cacheKey = new Request(`https://cache.local/tm2?name=${encodeURIComponent(name)}&page=${page}`);
     const hit = await cache.match(cacheKey);
     if (hit) return new Response(hit.body, { headers: hit.headers });
+
+    const used = await readUsed();
+    if (used >= limit) {
+      return json({ error: "이번 달 조회 한도에 도달했습니다. 다음 달 1일에 다시 이용할 수 있습니다.", limitReached: true }, 429);
+    }
+    // 성공·실패와 관계없이 KIPRIS를 부르는 순간 1건으로 센다 (보수적으로)
+    if (env.USAGE) await env.USAGE.put(usageKey, String(used + 1), { expirationTtl: 60 * 60 * 24 * 40 });
 
     const up = new URL(env.KIPRIS_URL || DEFAULT_URL);
     up.searchParams.set("trademarkName", name);

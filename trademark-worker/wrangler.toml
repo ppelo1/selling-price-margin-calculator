@@ -7,3 +7,7 @@ compatibility_date = "2025-01-01"
 # [vars]
 # KIPRIS_URL = "..."
 # ALLOWED_ORIGIN = "https://tools.cafeodi.store"
+
+[[kv_namespaces]]
+binding = "USAGE"
+id = "2688ff84cdc1471bba374280c59108cc"
