@@ -44,6 +44,13 @@
   .dl{display:grid;grid-template-columns:104px 1fr;gap:8px 12px;font-size:13px;margin:0;}
   .dl dt{color:var(--sub);}
   .dl dd{margin:0;word-break:break-all;}
+  .card h2{font-size:15px;margin:0 0 4px;}
+  .card .desc{font-size:12px;color:var(--sub);margin:0 0 18px;}
+  .guide-text{font-size:13.5px;line-height:1.7;color:#5b6270;}
+  .guide-text h3{font-size:14px;margin:20px 0 8px;color:var(--text);}
+  .guide-text p{margin:0 0 12px;}
+  .guide-text ol,.guide-text ul{margin:0 0 12px;padding-left:20px;}
+  .guide-text li{margin-bottom:6px;}
   .notice{font-size:12px;color:var(--sub);line-height:1.7;}
   .more{display:block;margin:14px auto 0;background:var(--input-bg);color:var(--text);border:1px solid var(--border);}
   .site-footer{max-width:720px;margin:24px auto 0;text-align:center;font-size:12px;color:var(--sub);}
@@ -71,7 +78,45 @@
   <div class="card notice">
     ※ 거절·소멸·취하·포기·무효된 상표는 결과에서 제외됩니다. 본 결과는 특허청 KIPRIS 데이터를 이용한 <b>참고용 정보</b>이며, 동일·유사 여부와 침해 가능성에 대한 법적 판단이 아닙니다. 상표 등록·사용 전에는 KIPRIS 원문 확인 또는 변리사 상담을 권장합니다.
   </div>
+  <!-- 사용법 / 설명 -->
+  <div class="card">
+    <h2>상표 조회는 이렇게 씁니다</h2>
+    <p class="desc">해외구매대행·온라인 셀러를 위한 상표 사전 점검 도구입니다.</p>
+    <div class="guide-text">
+      <p>
+        상품명이나 브랜드명을 정해 오픈마켓(스마트스토어, 쿠팡, 11번가 등)에 올리기 전에, 같은 이름의 상표가 이미
+        출원·등록되어 있는지 확인하는 것은 분쟁을 피하는 가장 기본적인 절차입니다. 이 도구는 특허청(지식재산처)의
+        상표 정보를 제공하는 KIPRIS 데이터를 이용해, 입력한 상표명과 일치하거나 포함하는 출원·공고·등록 상표를 목록으로 보여줍니다.
+      </p>
+      <h3>기본 사용 순서</h3>
+      <ol>
+        <li>확인하려는 <b>브랜드명·상품명</b>을 입력하고 <b>조회</b>를 누릅니다.</li>
+        <li>결과 목록에서 <b>상표명, 출원인, 상태(출원·공고·등록), 상품류</b>를 확인합니다.</li>
+        <li>궁금한 항목을 누르면 <b>상세 팝업</b>에서 출원번호·등록번호, 출원일·등록일, 대리인, 등록권리자, 도형코드 등을 볼 수 있습니다.</li>
+        <li>결과가 많으면 하단의 <b>더 보기</b>로 다음 20건을 불러옵니다.</li>
+      </ol>
+      <h3>결과를 볼 때 확인할 점</h3>
+      <ul>
+        <li><b>상품류가 핵심입니다.</b> 상표권은 지정한 상품·서비스 분야(상품류)별로 인정됩니다. 같은 이름이라도 내가 판매할 상품이 속한 상품류와 다르면 영향이 적을 수 있고, 같거나 유사한 분야라면 주의가 필요합니다. (1~34류는 상품, 35~45류는 서비스업입니다.)</li>
+        <li><b>같은 이름이 여러 줄 나올 수 있습니다.</b> 한 회사가 상품류별로, 또는 갱신·추가 출원으로 각각 따로 등록하기 때문입니다. 출원번호가 서로 다르면 별개의 상표입니다.</li>
+        <li><b>출원·공고 상태도 살펴보세요.</b> 아직 등록 전이라도 먼저 출원된 상표는 이후 등록되면 내 사용을 막을 수 있습니다.</li>
+        <li><b>이름이 똑같지 않아도 문제가 될 수 있습니다.</b> 발음(칭호), 모양(외관), 뜻(관념)이 비슷하면 유사 상표로 판단될 수 있으니 띄어쓰기·영문 표기·비슷한 발음으로도 조회해 보세요.</li>
+      </ul>
+      <h3>자주 묻는 질문</h3>
+      <p><b>Q. 결과가 없으면 써도 안전한가요?</b><br>
+      A. 아닙니다. 이 도구는 상표명 기준으로 검색하므로, 발음이나 뜻이 비슷한 상표, 도형 상표, 최근 출원되어 아직 반영되지 않은 상표는 나오지 않을 수 있습니다. 중요한 브랜드는 KIPRIS 원문 검색이나 변리사 상담으로 한 번 더 확인하세요.</p>
+      <p><b>Q. 소멸·거절된 상표는 왜 안 보이나요?</b><br>
+      A. 현재 효력이 있거나 진행 중인 출원·공고·등록 상표만 보여줍니다. 거절·소멸·취하·포기·무효된 상표는 권리가 없어 제외했습니다.</p>
+      <p><b>Q. 해외 브랜드 제품을 판매하는 것도 확인해야 하나요?</b><br>
+      A. 유명 브랜드 상품을 판매할 때는 정품 여부, 병행수입 가능 여부에 따라 판단이 달라집니다. 브랜드명이 한국에 상표로 등록되어 있는지 확인하는 것은 그 첫 단계입니다.</p>
+      <p><b>Q. 입력한 검색어는 저장되나요?</b><br>
+      A. 검색어는 조회를 위해 이 사이트의 중계 서버를 거쳐 KIPRIS로 전달됩니다. 검색어를 별도로 저장하거나 회원 정보와 연결하지 않으며, 같은 검색의 결과만 최대 1시간 임시로 보관해 조회 횟수를 줄입니다.</p>
+      <p><b>Q. 조회 횟수에 제한이 있나요?</b><br>
+      A. KIPRIS 무료 이용 한도에 맞춰 월 조회 횟수가 제한되어 있으며, 페이지 하단에 이번 달 사용량이 표시됩니다. 한도에 도달하면 다음 달 1일에 다시 이용할 수 있습니다.</p>
+    </div>
+  </div>
 </div>
+
 <div class="modal-bg" id="mbg" hidden>
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mt">
     <button class="x" id="mx" type="button" aria-label="닫기">&times;</button>
