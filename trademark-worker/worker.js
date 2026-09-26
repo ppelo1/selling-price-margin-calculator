@@ -78,14 +78,15 @@ export default {
     if (!name || name.length > 50) return json({ error: "상표명을 1~50자로 입력하세요." }, 400);
 
     const cache = caches.default;
-    const cacheKey = new Request(`https://cache.local/tm?name=${encodeURIComponent(name)}&page=${page}`);
+    const cacheKey = new Request(`https://cache.local/tm2?name=${encodeURIComponent(name)}&page=${page}`);
     const hit = await cache.match(cacheKey);
     if (hit) return new Response(hit.body, { headers: hit.headers });
 
     const up = new URL(env.KIPRIS_URL || DEFAULT_URL);
     up.searchParams.set("trademarkName", name);
-    for (const s of ["application", "publication", "registration", "refused", "expiration", "withdrawal", "abandonment", "cancel"])
-      up.searchParams.set(s, "true");
+    // 살아 있는 상표만: 출원·공고·등록. 거절·소멸·취하·포기·무효는 제외
+    for (const s of ["application", "publication", "registration"]) up.searchParams.set(s, "true");
+    for (const s of ["refused", "expiration", "withdrawal", "abandonment", "cancel"]) up.searchParams.set(s, "false");
     up.searchParams.set("docsStart", String((page - 1) * 20 + 1)); // 페이지 번호가 아닌 시작 항목 번호
     up.searchParams.set("docsCount", "20");
     up.searchParams.set("accessKey", env.KIPRIS_KEY);
