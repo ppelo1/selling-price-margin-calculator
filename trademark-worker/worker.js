@@ -110,7 +110,8 @@ export default {
       return json({ error: "이번 달 조회 한도에 도달했습니다. 다음 달 1일에 다시 이용할 수 있습니다.", limitReached: true }, 429);
     }
     // 성공·실패와 관계없이 KIPRIS를 부르는 순간 1건으로 센다 (보수적으로)
-    if (env.USAGE) await env.USAGE.put(usageKey, String(used + 1), { expirationTtl: 60 * 60 * 24 * 40 });
+    // KV는 같은 키를 초당 1회만 쓸 수 있어, 동시 조회 시 쓰기가 실패해도 조회는 계속한다
+    if (env.USAGE) { try { await env.USAGE.put(usageKey, String(used + 1), { expirationTtl: 60 * 60 * 24 * 40 }); } catch (e) {} }
 
     const up = new URL((env.KIPRIS_URL || DEFAULT_URL).replace("trademarkNameSearchInfo", exact ? "trademarkNameMatchSearchInfo" : "trademarkNameSearchInfo"));
     up.searchParams.set(exact ? "trademarkNameMatch" : "trademarkName", name);

@@ -189,26 +189,35 @@
     }).join("");
     $("list").insertAdjacentHTML(append?"beforeend":"afterbegin", html);
   }
+  let reqId = 0;
   async function search(append){
     if(!API_BASE){ $("msg").className="msg err"; $("msg").textContent="API 주소(API_BASE)가 아직 설정되지 않았습니다."; return; }
-    $("btn").disabled = true; $("msg").className="msg"; $("msg").textContent="조회 중...";
+    const my = ++reqId;                       // 최신 요청만 화면에 반영 (이전 응답 무시)
+    const target = append ? page + 1 : 1;     // 성공했을 때만 page 갱신
+    $("btn").disabled = true; $("more").disabled = true;
+    $("msg").className="msg"; $("msg").textContent="조회 중...";
     try{
-      const r = await fetch(`${API_BASE}/?name=${encodeURIComponent(name)}&page=${page}${exact?"&exact=1":""}`, { signal: AbortSignal.timeout(20000) });
+      const r = await fetch(`${API_BASE}/?name=${encodeURIComponent(name)}&page=${target}${exact?"&exact=1":""}`, { signal: AbortSignal.timeout(20000) });
       const d = await r.json();
+      if(my !== reqId) return;
       if(!r.ok) throw new Error(d.error||"조회 실패");
+      page = target;
       if(!append){ $("list").innerHTML=""; shown=[]; }
       $("res").hidden = false;
       $("sum").innerHTML = `${esc(d.name)}에 대해${exact ? " 정확히 일치하는 상표가" : ""} 총 <span class="cnt">${d.totalCount.toLocaleString()}</span>건이 검색되었습니다.`;
       render(d.items, true);
-      $("more").hidden = $("list").children.length >= d.totalCount || d.items.length===0;
-      $("msg").textContent = d.items.length ? "" : "조회된 상표가 없습니다.";
+      $("more").hidden = shown.length >= d.totalCount || d.items.length===0;
+      $("msg").textContent = d.items.length || append ? "" : "조회된 상표가 없습니다.";
     }catch(e){
+      if(my !== reqId) return;
       const slow = e && (e.name==="TimeoutError" || e.name==="AbortError");
       $("msg").className="msg err"; $("msg").textContent = slow ? "응답이 지연되고 있습니다. 잠시 후 다시 조회해 주세요." : (e.message||"오류가 발생했습니다.");
-    }finally{ $("btn").disabled=false; loadUsage(); }
+    }finally{
+      if(my === reqId){ $("btn").disabled=false; $("more").disabled=false; loadUsage(); }
+    }
   }
-  $("f").addEventListener("submit",e=>{e.preventDefault();name=$("q").value.trim();if(!name)return;page=1;exact=$("exact").checked;try{localStorage.setItem("tmExact",exact?"1":"0");}catch(err){}search(false);});
-  $("more").addEventListener("click",()=>{page++;search(true);});
+  $("f").addEventListener("submit",e=>{e.preventDefault();name=$("q").value.trim();if(!name)return;exact=$("exact").checked;try{localStorage.setItem("tmExact",exact?"1":"0");}catch(err){}search(false);});
+  $("more").addEventListener("click",()=>{ if(!$("more").disabled) search(true); });
   $("list").addEventListener("click",e=>{const el=e.target.closest(".item"); if(el) openModal(shown[el.dataset.i]);});
   $("list").addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){const el=e.target.closest(".item"); if(el){e.preventDefault(); openModal(shown[el.dataset.i]);}} });
   $("mx").addEventListener("click",closeModal);
