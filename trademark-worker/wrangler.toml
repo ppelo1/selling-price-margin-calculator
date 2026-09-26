@@ -1,0 +1,9 @@
+name = "kipris-trademark-proxy"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+# 배포 전:  npx wrangler secret put KIPRIS_KEY
+# 필요 시 엔드포인트/허용 도메인 변경:
+# [vars]
+# KIPRIS_URL = "..."
+# ALLOWED_ORIGIN = "https://tools.cafeodi.store"

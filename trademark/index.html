@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>상표 조회 (KIPRIS 상표 검색)</title>
+<meta name="description" content="브랜드명·상표명을 입력하면 KIPRIS(특허청) 데이터로 출원·등록된 동일·유사 상표를 조회합니다. 구매대행 셀러의 판매 전 상표권 사전 점검용." />
+<link rel="canonical" href="https://tools.cafeodi.store/trademark/" />
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9837557267770043" crossorigin="anonymous"></script>
+<style>
+  :root{--bg:#eef1f4;--card:#fff;--border:#e3e6ea;--input-bg:#f7f8fa;--sub:#8a8f99;--text:#1f2329;--accent:#2f7dea;--accent-bg:#eaf2fe;--green:#1aa053;--warn:#e05a3a;--divider:#eceef1;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:40px 16px;background:var(--bg);font-family:"Pretendard","Malgun Gothic","Apple SD Gothic Neo",-apple-system,sans-serif;color:var(--text);}
+  .wrap{max-width:720px;margin:0 auto;}
+  .hero{text-align:center;margin:0 0 28px;}
+  h1{margin:0 0 8px;font-size:28px;font-weight:800;letter-spacing:-0.5px;background:linear-gradient(90deg,var(--accent),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .sub{color:var(--sub);font-size:13.5px;margin:0;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.03);}
+  form{display:flex;gap:8px;}
+  input[type=text]{flex:1;min-width:0;padding:12px 14px;font-size:15px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg);color:var(--text);outline:none;}
+  input[type=text]:focus{border-color:var(--accent);}
+  button{padding:12px 20px;font-size:15px;font-weight:700;color:#fff;background:var(--accent);border:none;border-radius:10px;cursor:pointer;}
+  button:disabled{opacity:.6;cursor:default;}
+  .msg{font-size:13px;color:var(--sub);margin:14px 0 0;}
+  .msg.err{color:var(--warn);}
+  .summary{font-size:14px;font-weight:700;margin:0 0 6px;}
+  .item{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--divider);}
+  .item:last-child{border-bottom:none;}
+  .thumb{flex:0 0 72px;height:72px;border:1px solid var(--border);border-radius:8px;background:var(--input-bg) center/contain no-repeat;}
+  .info{flex:1;min-width:0;font-size:13px;color:var(--sub);line-height:1.6;}
+  .info .t{font-size:15px;font-weight:700;color:var(--text);word-break:break-all;}
+  .badge{display:inline-block;padding:2px 8px;margin-left:6px;font-size:11px;font-weight:700;border-radius:999px;background:var(--accent-bg);color:var(--accent);vertical-align:middle;}
+  .badge.reg{background:#e6f6ec;color:var(--green);}
+  .badge.bad{background:#fdeceb;color:var(--warn);}
+  .notice{font-size:12px;color:var(--sub);line-height:1.7;}
+  .more{display:block;margin:14px auto 0;background:var(--input-bg);color:var(--text);border:1px solid var(--border);}
+  .site-footer{max-width:720px;margin:24px auto 0;text-align:center;font-size:12px;color:var(--sub);}
+  .site-footer a{color:var(--sub);text-decoration:underline;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <h1>상표 조회</h1>
+    <p class="sub">브랜드명으로 KIPRIS에 출원·등록된 상표를 확인하세요.</p>
+  </div>
+  <div class="card">
+    <form id="f">
+      <input type="text" id="q" placeholder="상표명 (예: 카페오디)" maxlength="50" autocomplete="off" required />
+      <button type="submit" id="btn">조회</button>
+    </form>
+    <p class="msg" id="msg"></p>
+  </div>
+  <div class="card" id="res" hidden>
+    <p class="summary" id="sum"></p>
+    <div id="list"></div>
+    <button class="more" id="more" hidden>더 보기</button>
+  </div>
+  <div class="card notice">
+    ※ 본 결과는 특허청 KIPRIS 데이터를 이용한 <b>참고용 정보</b>이며, 동일·유사 여부와 침해 가능성에 대한 법적 판단이 아닙니다. 상표 등록·사용 전에는 KIPRIS 원문 확인 또는 변리사 상담을 권장합니다.
+  </div>
+</div>
+<footer class="site-footer"><a href="/">계산기·도구 모음</a> · <a href="/privacy.html">개인정보처리방침</a></footer>
+<script>
+  // 배포한 Cloudflare Worker 주소로 교체하세요 (trademark-worker/README.md 참고)
+  const API_BASE = "https://kipris-trademark-proxy.ppelo.workers.dev";
+  const $ = (id) => document.getElementById(id);
+  let name = "", page = 1;
+
+  function esc(s){return String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+  function badgeClass(s){
+    if(/등록/.test(s) && !/거절|소멸|무효|취하|포기/.test(s)) return "reg";
+    if(/거절|소멸|무효|취하|포기/.test(s)) return "bad";
+    return "";
+  }
+  function render(items, append){
+    const html = items.map(i=>{
+      const img = /^https?:\/\//.test(i.image) ? ` style="background-image:url('${esc(i.image.replace(/^http:/, "https:"))}')"` : "";
+      return `<div class="item"><div class="thumb"${img}></div><div class="info">
+        <div class="t">${esc(i.title)||"(도형/무명)"}<span class="badge ${badgeClass(i.status)}">${esc(i.status)||"상태 미상"}</span></div>
+        출원인: ${esc(i.applicant)||"-"}<br>
+        출원번호 ${esc(i.applicationNumber)||"-"} (${esc(i.applicationDate)||"-"})
+        ${i.registrationNumber?`<br>등록번호 ${esc(i.registrationNumber)}`:""}
+        ${i.classification?`<br>상품류 ${esc(i.classification)}`:""}
+      </div></div>`;
+    }).join("");
+    $("list").insertAdjacentHTML(append?"beforeend":"afterbegin", html);
+  }
+  async function search(append){
+    if(!API_BASE){ $("msg").className="msg err"; $("msg").textContent="API 주소(API_BASE)가 아직 설정되지 않았습니다."; return; }
+    $("btn").disabled = true; $("msg").className="msg"; $("msg").textContent="조회 중...";
+    try{
+      const r = await fetch(`${API_BASE}/?name=${encodeURIComponent(name)}&page=${page}`);
+      const d = await r.json();
+      if(!r.ok) throw new Error(d.error||"조회 실패");
+      if(!append) $("list").innerHTML="";
+      $("res").hidden = false;
+      $("sum").textContent = `"${d.name}" 검색 결과 총 ${d.totalCount.toLocaleString()}건`;
+      render(d.items, true);
+      $("more").hidden = $("list").children.length >= d.totalCount || d.items.length===0;
+      $("msg").textContent = d.items.length ? "" : "조회된 상표가 없습니다.";
+    }catch(e){
+      $("msg").className="msg err"; $("msg").textContent = e.message||"오류가 발생했습니다.";
+    }finally{ $("btn").disabled=false; }
+  }
+  $("f").addEventListener("submit",e=>{e.preventDefault();name=$("q").value.trim();if(!name)return;page=1;search(false);});
+  $("more").addEventListener("click",()=>{page++;search(true);});
+</script>
+</body>
+</html>
