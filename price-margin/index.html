@@ -831,6 +831,12 @@
   // 다시 "총구매비용 + 총마진" 공식으로 계산된다.
   let priceOverride = null;
 
+  // 마켓 최종가를 직접 입력했을 때, 그 입력한 마켓만 "판매가에서 역산한 값"이 아니라
+  // 입력한 값 그대로 보여주기 위한 고정값. (그렇지 않으면 판매가가 100원 단위로 올림되면서
+  // 방금 입력한 마켓가 자체도 그 판매가로부터 다시 계산되어 다른 값으로 튀어 보임)
+  let pinnedMarketKey = null;
+  let pinnedMarketValue = null;
+
   // 실제 순마진을 직접 입력했을 때만 쓰이는 표시값(추가 마진은 건드리지 않으므로
   // 공식으로 재계산한 값이 아니라 입력한 값을 그대로 보여주기 위함).
   let netMarginOverride = null;
@@ -888,9 +894,14 @@
 
     if (updateMarkets) {
       markets.forEach(m => {
-        const feeInput = $('fee_' + m.key);
-        const fee = toNum(feeInput.value);
-        const price = ceil100(sellingPrice / (1 - fee / 100));
+        let price;
+        if (priceOverride !== null && m.key === pinnedMarketKey) {
+          price = pinnedMarketValue;
+        } else {
+          const feeInput = $('fee_' + m.key);
+          const fee = toNum(feeInput.value);
+          price = ceil100(sellingPrice / (1 - fee / 100));
+        }
         setValueIfNotFocused($('price_' + m.key), wonPlain(price));
       });
     }
@@ -913,6 +924,7 @@
     const base = computeBase();
     const typed = readTypedNumber($('totalMarginInput'));
     priceOverride = null;
+    pinnedMarketKey = null;
     netMarginOverride = null;
     setAdditionalMarginAndRecalc(typed - base.baseMargin, { updateMarkets: false });
   }
@@ -922,6 +934,7 @@
   function applyReverseFromSellingPrice(){
     const typed = readTypedNumber($('sellingPriceInput'));
     priceOverride = Math.round(typed);
+    pinnedMarketKey = null;
     netMarginOverride = null;
     recalc();
   }
@@ -929,10 +942,13 @@
   // 마켓별 최종가를 직접 입력했을 때: 같은 수식(마켓가 = 판매가 ÷ (1-수수료율))으로
   // 판매가만 그 값에 맞게 바꾼다. 추가 마진·총마진은 건드리지 않는다.
   // 판매가가 바뀌면 이 마켓을 포함한 모든 마켓 가격이 그 판매가 기준으로 다시 계산된다.
+  // 방금 입력한 이 마켓 자신은 100원 단위 올림 왕복 때문에 값이 바뀌지 않도록, 입력한 값 그대로 고정해서 보여준다.
   function applyReverseFromMarketPrice(key){
     const typed = readTypedNumber($('price_' + key));
     const fee = toNum($('fee_' + key).value);
     priceOverride = ceil100(typed * (1 - fee / 100));
+    pinnedMarketKey = key;
+    pinnedMarketValue = Math.round(typed);
     netMarginOverride = null;
     recalc();
   }
@@ -943,6 +959,7 @@
   function applyReverseFromNetMargin(){
     const base = computeBase();
     const typed = readTypedNumber($('netMarginInput'));
+    pinnedMarketKey = null;
     const actualForwardingShipping = toNum($('actualForwardingShipping').value);
     const impliedTotalMargin = typed + actualForwardingShipping;
     const impliedSellingPrice = base.totalCost + impliedTotalMargin + base.domesticShippingFee;
@@ -1020,7 +1037,7 @@
 
   document.addEventListener('input', function(e){
     if (e.target.id && editableIds.has(e.target.id)) return; // 위 필드들은 change(엔터/포커스아웃)에서만 반영
-    if (!isOverrideSafeField(e.target)) priceOverride = null;
+    if (!isOverrideSafeField(e.target)) { priceOverride = null; pinnedMarketKey = null; }
     netMarginOverride = null; // 실제 순마진 입력창 외의 값이 바뀌면 항상 공식대로 다시 계산
     // 추가 마진을 직접(카드 안의 입력창에서) 고칠 때도 마켓 최종가는 그대로 둔다.
     recalc(e.target.id === 'additionalMargin' ? { updateMarkets: false } : undefined);
@@ -1028,7 +1045,7 @@
   document.addEventListener('change', function(e){
     if (e.target.id && editableIds.has(e.target.id)) return; // 각 필드 전용 리스너가 이미 처리함
     netMarginOverride = null;
-    if (!isOverrideSafeField(e.target)) priceOverride = null;
+    if (!isOverrideSafeField(e.target)) { priceOverride = null; pinnedMarketKey = null; }
     recalc(e.target.id === 'additionalMargin' ? { updateMarkets: false } : undefined);
   });
 
