@@ -404,17 +404,29 @@
     <p class="desc">수정 시 해당 상품에만 적용됩니다.</p>
 
     <div class="row">
-      <div class="label">상품 구매비용</div>
+      <div class="label">통화 선택<small>위안(¥) 또는 달러($) 중 선택</small></div>
       <div class="field">
         <div class="input-box">
-          <input type="number" id="costYuan" value="365" step="0.01">
-          <span class="unit">¥</span>
+          <select id="currencySelect">
+            <option value="CNY">위안 (¥)</option>
+            <option value="USD">달러 ($)</option>
+          </select>
         </div>
       </div>
     </div>
 
     <div class="row">
-      <div class="label">적용 환율<small>1위안 ⇄ 원</small></div>
+      <div class="label">상품 구매비용</div>
+      <div class="field">
+        <div class="input-box">
+          <input type="number" id="costYuan" value="365" step="0.01">
+          <span class="unit" id="costCurrencyUnit">¥</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label">적용 환율<small id="exchangeRateHint">1위안 ⇄ 원</small></div>
       <div class="field">
         <div class="input-box">
           <input type="number" id="exchangeRate" value="203.94" step="0.01">
@@ -647,7 +659,7 @@
       </p>
       <h3>기본 사용 순서</h3>
       <ol>
-        <li><b>상품 구매비용(¥)</b>과 <b>적용 환율</b>을 입력하면 원화 환산 원가가 자동 계산됩니다.</li>
+        <li><b>통화(위안/달러)</b>를 선택하고 <b>상품 구매비용</b>과 <b>적용 환율</b>을 입력하면 원화 환산 원가가 자동 계산됩니다.</li>
         <li><b>카드 수수료율</b>, <b>배대지 비용</b>, <b>관부가세</b> 여부를 입력해 실제 총구매비용을 확정합니다.</li>
         <li><b>기본 마진율(%)</b>과 <b>추가 마진(원)</b>을 정하면 총마진과 판매가가 자동으로 산출됩니다.</li>
         <li>마켓별 수수료율(스마트스토어 5%, 쿠팡 15% 등)을 반영한 <b>오픈마켓별 최종 노출가</b>까지 한 번에 확인할 수 있습니다.</li>
@@ -720,6 +732,20 @@
     idx = Math.max(0, Math.min(forwarder.prices.length - 1, idx));
     return forwarder.prices[idx];
   }
+
+  // 상품 구매비용 통화(위안/달러) 설정
+  const CURRENCIES = {
+    CNY: { symbol: '¥', name: '위안', defaultRate: 203.94 },
+    USD: { symbol: '$', name: '달러', defaultRate: 1400 },
+  };
+  const currencySelectEl = $('currencySelect');
+  currencySelectEl.addEventListener('change', function(){
+    const cur = CURRENCIES[this.value] || CURRENCIES.CNY;
+    $('costCurrencyUnit').textContent = cur.symbol;
+    $('exchangeRateHint').textContent = `1${cur.name} ⇄ 원`;
+    $('exchangeRate').value = cur.defaultRate;
+    recalc();
+  });
 
   // 배대지 선택 select 박스 채우기
   const forwarderSelectEl = $('forwarderSelect');
