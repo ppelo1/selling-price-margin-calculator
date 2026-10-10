@@ -24,7 +24,6 @@
     --divider:#eceef1;
   }
   *{box-sizing:border-box;}
-  [hidden]{display:none !important;}
   body{
     margin:0;
     padding:40px 16px;
@@ -613,7 +612,6 @@
     </div>
     <div class="result-line sub"><span>ㄴ 기본 마진 (<span id="out_baseMarginRateLabel">40</span>%)</span><span class="amt" id="out_baseMargin">0 원</span></div>
     <div class="result-line sub"><span>ㄴ 추가 마진</span><span class="amt" id="out_addMargin">0 원</span></div>
-    <div class="result-line sub" id="row_priceAdjust" hidden><span>ㄴ 판매가 직접 조정분</span><span class="amt" id="out_priceAdjust">0 원</span></div>
 
     <div class="result-line sub"><span>ㄴ 국내 배송비</span><span class="amt" id="out_domesticShip">0 원</span></div>
     <div class="result-line sub"><span>ㄴ 실제 배대지 배송비 (차감)</span><span class="amt warn" id="out_actualForwarding">−0 원</span></div>
@@ -906,28 +904,18 @@
     const actualForwardingShipping = toNum($('actualForwardingShipping').value);
     $('out_actualForwarding').textContent = '−' + won(actualForwardingShipping);
 
-    // 판매가/마켓가/실제 순마진을 직접 입력해서 판매가가 공식값과 달라진 경우,
-    // 총마진은 실제 판매가 기준(판매가 − 총구매비용 − 국내배송비)으로 보여주고,
-    // 저장된 기본마진+추가마진과의 차이는 "판매가 직접 조정분"으로 따로 표시한다.
-    // (추가 마진 값 자체는 그대로 유지)
-    let displayedTotalMargin = totalMargin;
-    if (netMarginOverride !== null) {
-      displayedTotalMargin = netMarginOverride + actualForwardingShipping;
-    } else if (priceOverride !== null) {
-      displayedTotalMargin = sellingPrice - base.totalCost - base.domesticShippingFee;
-    }
-    const priceAdjust = displayedTotalMargin - totalMargin;
-    const adjustRow = $('row_priceAdjust');
-    adjustRow.hidden = (priceOverride === null && netMarginOverride === null) || priceAdjust === 0;
-    $('out_priceAdjust').textContent = (priceAdjust >= 0 ? '+' : '−') + won(Math.abs(priceAdjust));
-
-    const netMarginAfterShipping = displayedTotalMargin - actualForwardingShipping;
+    // 판매가/마켓가를 직접 override했다면, 실제 순마진도 (저장된 총마진이 아니라)
+    // 그 새 판매가를 기준으로 역산해서 보여준다. 단, 총마진·추가마진 표시 자체는 그대로 둔다.
+    const effectiveTotalMarginForNet = (priceOverride !== null)
+      ? (sellingPrice - base.totalCost - base.domesticShippingFee)
+      : totalMargin;
+    const netMarginAfterShipping = (netMarginOverride !== null) ? netMarginOverride : (effectiveTotalMarginForNet - actualForwardingShipping);
     const netMarginEl = $('netMarginInput');
     setValueIfNotFocused(netMarginEl, (netMarginAfterShipping >= 0 ? '+' : '') + wonPlain(netMarginAfterShipping));
     netMarginEl.classList.toggle('warn', netMarginAfterShipping < 0);
 
     // 총 마진 / 판매가 / 실제 순마진 입력창: 편집 중이 아닐 때만 다시 그림
-    setValueIfNotFocused($('totalMarginInput'), wonPlain(displayedTotalMargin));
+    setValueIfNotFocused($('totalMarginInput'), wonPlain(totalMargin));
     setValueIfNotFocused($('sellingPriceInput'), wonPlain(sellingPrice));
 
     if (updateMarkets) {
