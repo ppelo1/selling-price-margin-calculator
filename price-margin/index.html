@@ -24,6 +24,7 @@
     --divider:#eceef1;
   }
   *{box-sizing:border-box;}
+  [hidden]{display:none !important;}
   body{
     margin:0;
     padding:40px 16px;
@@ -404,12 +405,13 @@
     <p class="desc">수정 시 해당 상품에만 적용됩니다.</p>
 
     <div class="row">
-      <div class="label">통화 선택<small>위안(¥) 또는 달러($) 중 선택</small></div>
+      <div class="label">통화 선택<small>위안(¥) · 달러($) · 원(₩) 중 선택</small></div>
       <div class="field">
         <div class="input-box">
           <select id="currencySelect">
             <option value="CNY">위안 (¥)</option>
             <option value="USD">달러 ($)</option>
+            <option value="KRW">원 (₩)</option>
           </select>
         </div>
       </div>
@@ -425,7 +427,7 @@
       </div>
     </div>
 
-    <div class="row">
+    <div class="row" id="exchangeRateRow">
       <div class="label">적용 환율<small id="exchangeRateHint">1위안 ⇄ 원</small></div>
       <div class="field">
         <div class="input-box">
@@ -659,7 +661,7 @@
       </p>
       <h3>기본 사용 순서</h3>
       <ol>
-        <li><b>통화(위안/달러)</b>를 선택하고 <b>상품 구매비용</b>과 <b>적용 환율</b>을 입력하면 원화 환산 원가가 자동 계산됩니다.</li>
+        <li><b>통화(위안/달러/원)</b>를 선택하고 <b>상품 구매비용</b>과 <b>적용 환율</b>을 입력하면 원화 환산 원가가 자동 계산됩니다. 원화를 고르면 환율 입력 없이 그대로 사용합니다.</li>
         <li><b>카드 수수료율</b>, <b>배대지 비용</b>, <b>관부가세</b> 여부를 입력해 실제 총구매비용을 확정합니다.</li>
         <li><b>기본 마진율(%)</b>과 <b>추가 마진(원)</b>을 정하면 총마진과 판매가가 자동으로 산출됩니다.</li>
         <li>마켓별 수수료율(스마트스토어 5%, 쿠팡 15% 등)을 반영한 <b>오픈마켓별 최종 노출가</b>까지 한 번에 확인할 수 있습니다.</li>
@@ -733,17 +735,20 @@
     return forwarder.prices[idx];
   }
 
-  // 상품 구매비용 통화(위안/달러) 설정
+  // 상품 구매비용 통화(위안/달러/원) 설정. 원화는 환율이 필요 없으므로 환율 칸을 숨기고 1로 둔다.
   const CURRENCIES = {
-    CNY: { symbol: '¥', name: '위안', defaultRate: 203.94 },
-    USD: { symbol: '$', name: '달러', defaultRate: 1400 },
+    CNY: { symbol: '¥', name: '위안', defaultRate: 203.94, step: 0.01 },
+    USD: { symbol: '$', name: '달러', defaultRate: 1400, step: 0.01 },
+    KRW: { symbol: '원', name: '원', defaultRate: 1, step: 1 },
   };
   const currencySelectEl = $('currencySelect');
   currencySelectEl.addEventListener('change', function(){
     const cur = CURRENCIES[this.value] || CURRENCIES.CNY;
     $('costCurrencyUnit').textContent = cur.symbol;
+    $('costYuan').step = cur.step;
     $('exchangeRateHint').textContent = `1${cur.name} ⇄ 원`;
     $('exchangeRate').value = cur.defaultRate;
+    $('exchangeRateRow').hidden = (this.value === 'KRW');
     recalc();
   });
 
